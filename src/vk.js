@@ -53,7 +53,40 @@
                     }
                 })(i);
             }
+        },
+        seq: function(ids,callback){
+            var that = this;
+            if (!Array.isArray(ids)) {
+                ids = [ids];
+            }
+            that.count_js = ids.length;
+            function load(script_filename) {
+                return new Promise(function (resolve, reject) {
+                    script_doc = document.getElementById(script_filename);
+                    if(script_doc){
+                        return;
+                    }
+                    var script = document.createElement('script');
+                    script.setAttribute('id', script_filename);
+                    script.setAttribute('type', 'text/javascript');
+                    script.setAttribute('src', vk_config.root + vk_config.path[script_filename]);
+                    document.getElementsByTagName('body')[0].appendChild(script);
+                    console.log('loading:'+script_filename);
+                    script.onload = script.onreadystatechange = function(){
+                        console.log('loaded:'+script_filename);
+                        resolve('loaded:'+script_filename);
+                    }
+                    script.onerror = function(){
+                        reject(new Error('fail to load'));
+                    }
+                });
+            }
 
+            var promise = Promise.resolve();
+            for(let i=0;i<ids.length;i++){
+                promise.then(load(ids[i]));
+            }
+            
         }
     };
 
